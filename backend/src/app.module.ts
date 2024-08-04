@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { VideoModule } from './video/video.module';
 import { LiveStreamGateway } from './live-stream/live-stream.gateway';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [VideoModule],
+  imports: [ConfigModule.forRoot()],
   controllers: [AppController],
   providers: [AppService, LiveStreamGateway],
 })

@@ -8,13 +8,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-interface StreamData {
-  streamId: string;
-  chunks: Uint8Array[];
-}
-
 @WebSocketGateway({
-  cors: { origin: 'http://localhost:5173', credentials: true },
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+  },
 })
 export class LiveStreamGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -75,10 +73,13 @@ export class LiveStreamGateway
     console.log(`Get stream data for: ${payload.streamId}`);
     const streamData = this.streamDataMap.get(payload.streamId);
     if (streamData) {
-      streamData.forEach(chunk => {
+      streamData.forEach((chunk) => {
         client.emit('streamData', { streamId: payload.streamId, chunk });
       });
-      console.log(`Stream data sent for: ${payload.streamId}`, streamData.length);
+      console.log(
+        `Stream data sent for: ${payload.streamId}`,
+        streamData.length,
+      );
     } else {
       client.emit('streamError', { message: 'Stream not found' });
       console.log(`Stream not found: ${payload.streamId}`);

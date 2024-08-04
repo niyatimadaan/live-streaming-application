@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3000", {
+const socket = io(import.meta.env.BACKEND_URL || "http://localhost:3000", {
   transports: ["websocket"],
   withCredentials: true,
 });
