@@ -13,7 +13,8 @@ const App: React.FC = () => {
   const [streaming, setStreaming] = useState(false);
   const [streamId, setStreamId] = useState("");
   const [activeStreams, setActiveStreams] = useState<string[]>([]);
-  let mediaRecorder: MediaRecorder | null = null;
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -28,9 +29,7 @@ const App: React.FC = () => {
     socket.on("streamData", (data) => {
       if (data.streamId === streamId && sourceBufferRef.current) {
         const chunk = new Uint8Array(data.chunk);
-        console.log(
-          `Appending buffer for streamId: ${data.streamId}, chunk size: ${chunk.byteLength}`
-        );
+        console.log(`Appending buffer for streamId: ${data.streamId}, chunk size: ${chunk.byteLength}`);
 
         if (sourceBufferRef.current.updating) {
           sourceBufferRef.current.addEventListener(
@@ -54,10 +53,6 @@ const App: React.FC = () => {
             sourceBufferRef.current.buffered.end(0)
           );
         }
-        if (mediaSourceRef.current) {
-          mediaSourceRef.current.endOfStream();
-        }
-        setStreaming(false);
         console.log(`Stream stopped for: ${data.streamId}`);
       }
     });
@@ -93,7 +88,7 @@ const App: React.FC = () => {
       .then((stream) => {
         socket.emit("startStream", { streamId });
 
-        mediaRecorder = new MediaRecorder(stream, {
+        const mediaRecorder = new MediaRecorder(stream, {
           mimeType: 'video/webm; codecs="vp8, opus"',
         });
 
@@ -104,6 +99,8 @@ const App: React.FC = () => {
         };
 
         mediaRecorder.start(1000); // Send data every second
+        mediaRecorderRef.current = mediaRecorder;
+        streamRef.current = stream;
         setStreaming(true);
         console.log(`Started streaming with ID: ${streamId}`);
 
@@ -115,8 +112,11 @@ const App: React.FC = () => {
   };
 
   const stopStreaming = () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop();
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
     }
     socket.emit("stopStream", { streamId });
     setStreaming(false);
