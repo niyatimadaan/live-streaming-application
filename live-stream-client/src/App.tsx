@@ -29,7 +29,9 @@ const App: React.FC = () => {
     socket.on("streamData", (data) => {
       if (data.streamId === streamId && sourceBufferRef.current) {
         const chunk = new Uint8Array(data.chunk);
-        console.log(`Appending buffer for streamId: ${data.streamId}, chunk size: ${chunk.byteLength}`);
+        console.log(
+          `Appending buffer for streamId: ${data.streamId}, chunk size: ${chunk.byteLength}`
+        );
 
         if (sourceBufferRef.current.updating) {
           sourceBufferRef.current.addEventListener(
@@ -116,7 +118,7 @@ const App: React.FC = () => {
       mediaRecorderRef.current.stop();
     }
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
     }
     socket.emit("stopStream", { streamId });
     setStreaming(false);
@@ -162,7 +164,7 @@ const App: React.FC = () => {
       <div
         style={{ width: "20%", padding: "10px", borderRight: "1px solid #ccc" }}
       >
-        <h3>Active Streams</h3>
+        <h3 className="font-bold">Active Streams</h3>
         <ul>
           {activeStreams.map((id) => (
             <li
@@ -178,20 +180,23 @@ const App: React.FC = () => {
           ))}
         </ul>
       </div>
-      <div style={{ width: "80%", padding: "10px" }}>
-        <input
-          type="text"
-          value={streamId}
-          onChange={(e) => setStreamId(e.target.value)}
-          placeholder="Stream ID"
-        />
-        <video ref={videoRef} autoPlay controls></video>
-        <button onClick={startStreaming} disabled={streaming}>
-          Start Streaming
-        </button>
-        <button onClick={stopStreaming} disabled={!streaming}>
-          Stop Streaming
-        </button>
+      <div style={{ width: "80%", padding: "10px" }} className="p-10">
+        <video ref={videoRef} autoPlay controls className="m-4"></video>
+        <div>
+          <input
+            type="text"
+            value={streamId}
+            onChange={(e) => setStreamId(e.target.value)}
+            placeholder="Stream ID"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-[80%] p-2 m-2"
+          />
+          <button onClick={startStreaming} disabled={streaming}>
+            Start Streaming
+          </button>
+          <button onClick={stopStreaming} disabled={!streaming}>
+            Stop Streaming
+          </button>
+        </div>
       </div>
     </div>
   );
